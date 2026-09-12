@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Controle ESP32</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Biblioteca MQTT para navegador -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+
+<body>
+
+    <main class="container">
+
+        <div class="card">
+
+            <h1>Controle ESP32</h1>
+
+            <p class="subtitle">
+                Controle do LED conectado ao GPIO 2
+            </p>
+
+            <!-- Status da conexão -->
+            <div class="connection">
+                <span id="connectionDot" class="dot offline"></span>
+
+                <span id="connectionText">
+                    Desconectado
+                </span>
+            </div>
+
+            <!-- LED -->
+            <div class="led-area">
+
+                <div id="led" class="led"></div>
+
+                <h2 id="ledStatus">
+                    DESLIGADO
+                </h2>
+
+            </div>
+
+            <!-- Botões -->
+            <div class="buttons">
+
+                <button
+                    id="btnOn"
+                    class="btn btn-on"
+                    onclick="ligarLED()"
+                >
+                    LIGAR
+                </button>
+
+                <button
+                    id="btnOff"
+                    class="btn btn-off"
+                    onclick="desligarLED()"
+                >
+                    DESLIGAR
+                </button>
+
+            </div>
+
+            <button
+                class="btn btn-status"
+                onclick="consultarStatus()"
+            >
+                ATUALIZAR STATUS
+            </button>
+
+            <!-- Informações -->
+            <div class="info">
+
+                <div>
+                    <span>Tópico comando</span>
+                    <strong>espAndre/led</strong>
+                </div>
+
+                <div>
+                    <span>Tópico status</span>
+                    <strong>espAndre/status</strong>
+                </div>
+
+            </div>
+
+            <p id="message" class="message">
+                Aguardando conexão...
+            </p>
+
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
