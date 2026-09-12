@@ -1,101 +1,1372 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Controle ESP32</title>
 
-    <link rel="stylesheet" href="style.css">
 
-    <!-- Biblioteca MQTT para navegador -->
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            color: white;
+
+            background:
+                radial-gradient(
+                    circle at 50% 0%,
+                    #164e63 0%,
+                    #0f172a 45%,
+                    #020617 100%
+                );
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+
+        /* ==========================================
+           CONTAINER
+        ========================================== */
+
+        .container {
+
+            width: 100%;
+
+            max-width: 460px;
+        }
+
+
+        /* ==========================================
+           CARD
+        ========================================== */
+
+        .card {
+
+            background:
+                rgba(15, 23, 42, 0.96);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.08);
+
+            border-radius: 28px;
+
+            padding: 32px;
+
+            text-align: center;
+
+            box-shadow:
+                0 30px 80px
+                rgba(0, 0, 0, 0.55);
+
+            backdrop-filter:
+                blur(20px);
+        }
+
+
+        /* ==========================================
+           CABEÇALHO
+        ========================================== */
+
+        .icon {
+
+            width: 55px;
+
+            height: 55px;
+
+            margin:
+                0 auto 15px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(34, 211, 238, 0.12);
+
+            color: #22d3ee;
+
+            font-size: 25px;
+
+            box-shadow:
+                0 0 25px
+                rgba(34, 211, 238, 0.15);
+        }
+
+
+        h1 {
+
+            font-size: 30px;
+
+            margin-bottom: 7px;
+        }
+
+
+        .subtitle {
+
+            color: #94a3b8;
+
+            font-size: 14px;
+
+            margin-bottom: 25px;
+        }
+
+
+        /* ==========================================
+           STATUS CONEXÃO
+        ========================================== */
+
+        .connection {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding:
+                10px 16px;
+
+            border-radius: 50px;
+
+            background: #020617;
+
+            color: #cbd5e1;
+
+            font-size: 13px;
+
+            margin-bottom: 35px;
+        }
+
+
+        .dot {
+
+            width: 10px;
+
+            height: 10px;
+
+            border-radius: 50%;
+        }
+
+
+        .dot.online {
+
+            background: #22c55e;
+
+            box-shadow:
+                0 0 12px
+                #22c55e;
+        }
+
+
+        .dot.offline {
+
+            background: #ef4444;
+
+            box-shadow:
+                0 0 12px
+                #ef4444;
+        }
+
+
+        .dot.connecting {
+
+            background: #f59e0b;
+
+            box-shadow:
+                0 0 12px
+                #f59e0b;
+
+            animation:
+                piscar 1s infinite;
+        }
+
+
+        @keyframes piscar {
+
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+
+        }
+
+
+        /* ==========================================
+           LED
+        ========================================== */
+
+        .led-area {
+
+            margin-bottom: 30px;
+        }
+
+
+        .led {
+
+            width: 125px;
+
+            height: 125px;
+
+            margin:
+                0 auto 20px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #334155,
+                    #1e293b 65%,
+                    #0f172a
+                );
+
+            border:
+                6px solid
+                #334155;
+
+            box-shadow:
+                inset 0 0 25px
+                rgba(0, 0, 0, 0.5);
+
+            transition:
+                all 0.4s ease;
+        }
+
+
+        .led.on {
+
+            background:
+                radial-gradient(
+                    circle at 35% 30%,
+                    #dcfce7,
+                    #4ade80 25%,
+                    #16a34a 65%,
+                    #15803d
+                );
+
+            border-color:
+                #86efac;
+
+            box-shadow:
+
+                0 0 15px
+                #4ade80,
+
+                0 0 35px
+                #22c55e,
+
+                0 0 75px
+                rgba(34, 197, 94, 0.55),
+
+                inset 0 0 20px
+                rgba(255, 255, 255, 0.3);
+        }
+
+
+        .led-status {
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            color: #94a3b8;
+
+            letter-spacing: 1px;
+        }
+
+
+        .led.on + .led-status {
+
+            color: #4ade80;
+        }
+
+
+        .gpio {
+
+            margin-top: 7px;
+
+            color: #64748b;
+
+            font-size: 12px;
+        }
+
+
+        /* ==========================================
+           BOTÕES
+        ========================================== */
+
+        .buttons {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+
+            margin-bottom: 12px;
+        }
+
+
+        button {
+
+            border: none;
+
+            border-radius: 13px;
+
+            padding: 16px;
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition:
+                all 0.2s ease;
+        }
+
+
+        button:hover {
+
+            transform:
+                translateY(-2px);
+        }
+
+
+        button:active {
+
+            transform:
+                scale(0.97);
+        }
+
+
+        button:disabled {
+
+            opacity: 0.4;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        .btn-on {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #16a34a,
+                    #15803d
+                );
+
+            box-shadow:
+                0 8px 20px
+                rgba(22, 163, 74, 0.2);
+        }
+
+
+        .btn-on:hover {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #22c55e,
+                    #16a34a
+                );
+        }
+
+
+        .btn-off {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #dc2626,
+                    #b91c1c
+                );
+
+            box-shadow:
+                0 8px 20px
+                rgba(220, 38, 38, 0.2);
+        }
+
+
+        .btn-off:hover {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ef4444,
+                    #dc2626
+                );
+        }
+
+
+        .btn-status {
+
+            width: 100%;
+
+            background:
+                #334155;
+
+            color: #e2e8f0;
+        }
+
+
+        .btn-status:hover {
+
+            background:
+                #475569;
+        }
+
+
+        /* ==========================================
+           MENSAGEM
+        ========================================== */
+
+        .message {
+
+            min-height: 18px;
+
+            margin:
+                18px 0;
+
+            color: #64748b;
+
+            font-size: 12px;
+        }
+
+
+        /* ==========================================
+           INFORMAÇÕES
+        ========================================== */
+
+        .information {
+
+            text-align: left;
+
+            background:
+                #020617;
+
+            border-radius: 16px;
+
+            padding: 16px;
+
+            margin-top: 8px;
+        }
+
+
+        .info-title {
+
+            color: #64748b;
+
+            font-size: 10px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .info-row {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 7px 0;
+
+            border-bottom:
+                1px solid
+                rgba(255, 255, 255, 0.04);
+        }
+
+
+        .info-row:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .info-row span {
+
+            color: #64748b;
+
+            font-size: 11px;
+        }
+
+
+        .info-row strong {
+
+            color: #cbd5e1;
+
+            font-size: 10px;
+
+            text-align: right;
+
+            word-break: break-all;
+        }
+
+
+        footer {
+
+            margin-top: 20px;
+
+            color: #475569;
+
+            font-size: 10px;
+        }
+
+
+        /* ==========================================
+           CELULAR
+        ========================================== */
+
+        @media (max-width: 500px) {
+
+            .card {
+
+                padding: 25px 18px;
+
+                border-radius: 22px;
+            }
+
+
+            h1 {
+
+                font-size: 26px;
+            }
+
+
+            .led {
+
+                width: 110px;
+
+                height: 110px;
+            }
+        }
+
+
+        @media (max-width: 360px) {
+
+            .buttons {
+
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
     <main class="container">
 
-        <div class="card">
+        <section class="card">
 
-            <h1>Controle ESP32</h1>
+
+            <!-- CABEÇALHO -->
+
+            <div class="icon">
+                ⚡
+            </div>
+
+            <h1>
+                Controle ESP32
+            </h1>
 
             <p class="subtitle">
-                Controle do LED conectado ao GPIO 2
+                Controle remoto do LED no GPIO 2
             </p>
 
-            <!-- Status da conexão -->
+
+            <!-- STATUS DA CONEXÃO -->
+
             <div class="connection">
-                <span id="connectionDot" class="dot offline"></span>
+
+                <span
+                    id="connectionDot"
+                    class="dot connecting"
+                ></span>
 
                 <span id="connectionText">
-                    Desconectado
+                    Conectando ao HiveMQ...
                 </span>
+
             </div>
 
-            <!-- LED -->
+
+            <!-- INDICADOR DO LED -->
+
             <div class="led-area">
 
-                <div id="led" class="led"></div>
+                <div
+                    id="led"
+                    class="led"
+                ></div>
 
-                <h2 id="ledStatus">
+                <div
+                    id="ledStatus"
+                    class="led-status"
+                >
                     DESLIGADO
-                </h2>
+                </div>
+
+                <div class="gpio">
+                    GPIO 2
+                </div>
 
             </div>
 
-            <!-- Botões -->
+
+            <!-- BOTÕES -->
+
             <div class="buttons">
 
                 <button
                     id="btnOn"
-                    class="btn btn-on"
+                    class="btn-on"
                     onclick="ligarLED()"
+                    disabled
                 >
-                    LIGAR
+                    ● &nbsp; LIGAR
                 </button>
+
 
                 <button
                     id="btnOff"
-                    class="btn btn-off"
+                    class="btn-off"
                     onclick="desligarLED()"
+                    disabled
                 >
-                    DESLIGAR
+                    ○ &nbsp; DESLIGAR
                 </button>
 
             </div>
 
+
             <button
-                class="btn btn-status"
+                class="btn-status"
                 onclick="consultarStatus()"
             >
-                ATUALIZAR STATUS
+                ↻ &nbsp; ATUALIZAR STATUS
             </button>
 
-            <!-- Informações -->
-            <div class="info">
 
-                <div>
-                    <span>Tópico comando</span>
-                    <strong>espAndre/led</strong>
+            <!-- MENSAGEM -->
+
+            <div
+                id="message"
+                class="message"
+            >
+                Conectando ao servidor...
+            </div>
+
+
+            <!-- INFORMAÇÕES -->
+
+            <div class="information">
+
+                <div class="info-title">
+                    CONEXÃO MQTT
                 </div>
 
-                <div>
-                    <span>Tópico status</span>
-                    <strong>espAndre/status</strong>
+
+                <div class="info-row">
+
+                    <span>
+                        Broker
+                    </span>
+
+                    <strong>
+                        HiveMQ Cloud
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        WebSocket
+                    </span>
+
+                    <strong>
+                        TLS :8884
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        Comando
+                    </span>
+
+                    <strong>
+                        espAndre/led
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        Status
+                    </span>
+
+                    <strong>
+                        espAndre/status
+                    </strong>
+
                 </div>
 
             </div>
 
-            <p id="message" class="message">
-                Aguardando conexão...
-            </p>
 
-        </div>
+            <footer>
+                ESP32 • HiveMQ Cloud • MQTT
+            </footer>
+
+
+        </section>
 
     </main>
 
-    <script src="script.js"></script>
+
+
+    <!-- =====================================================
+         MQTT.JS
+    ====================================================== -->
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+
+        // ==================================================
+        // CONFIGURAÇÃO HIVEMQ
+        // ==================================================
+
+        const MQTT_URL =
+            "wss://7a256ccf891b4a84832ee38455ea6b60.s1.eu.hivemq.cloud:8884/mqtt";
+
+
+        const MQTT_USER =
+            "espAndre";
+
+
+        const MQTT_PASSWORD =
+            "12345678";
+
+
+        // ==================================================
+        // TÓPICOS
+        // ==================================================
+
+        const TOPICO_COMANDO =
+            "espAndre/led";
+
+
+        const TOPICO_STATUS =
+            "espAndre/status";
+
+
+        // ==================================================
+        // ELEMENTOS
+        // ==================================================
+
+        const led =
+            document.getElementById("led");
+
+
+        const ledStatus =
+            document.getElementById("ledStatus");
+
+
+        const connectionDot =
+            document.getElementById(
+                "connectionDot"
+            );
+
+
+        const connectionText =
+            document.getElementById(
+                "connectionText"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        const btnOn =
+            document.getElementById(
+                "btnOn"
+            );
+
+
+        const btnOff =
+            document.getElementById(
+                "btnOff"
+            );
+
+
+        // ==================================================
+        // CLIENT ID
+        // ==================================================
+
+        const clientId =
+            "WebESP32_" +
+            Math.random()
+                .toString(16)
+                .substring(2, 10);
+
+
+        // ==================================================
+        // LOG
+        // ==================================================
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "CONTROLE ESP32"
+        );
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "WebSocket:",
+            MQTT_URL
+        );
+
+        console.log(
+            "Client ID:",
+            clientId
+        );
+
+
+        // ==================================================
+        // CONECTAR AO HIVEMQ
+        // ==================================================
+
+        const client =
+            mqtt.connect(
+                MQTT_URL,
+                {
+
+                    clientId:
+                        clientId,
+
+                    username:
+                        MQTT_USER,
+
+                    password:
+                        MQTT_PASSWORD,
+
+                    clean:
+                        true,
+
+                    connectTimeout:
+                        15000,
+
+                    reconnectPeriod:
+                        3000,
+
+                    keepalive:
+                        60
+                }
+            );
+
+
+        // ==================================================
+        // CONECTADO
+        // ==================================================
+
+        client.on(
+            "connect",
+            function () {
+
+                console.log(
+                    "✓ CONECTADO AO HIVEMQ!"
+                );
+
+
+                connectionDot.className =
+                    "dot online";
+
+
+                connectionText.textContent =
+                    "Conectado ao HiveMQ";
+
+
+                message.textContent =
+                    "Conexão estabelecida.";
+
+
+                btnOn.disabled =
+                    false;
+
+
+                btnOff.disabled =
+                    false;
+
+
+                // Assinar status
+
+                client.subscribe(
+                    TOPICO_STATUS,
+                    function (error) {
+
+                        if (error) {
+
+                            console.error(
+                                "Erro ao assinar:",
+                                error
+                            );
+
+                            message.textContent =
+                                "Erro ao assinar status.";
+
+                            return;
+                        }
+
+
+                        console.log(
+                            "✓ Assinado:",
+                            TOPICO_STATUS
+                        );
+
+
+                        // Solicitar status
+
+                        consultarStatus();
+
+                    }
+                );
+
+            }
+        );
+
+
+        // ==================================================
+        // MENSAGEM RECEBIDA
+        // ==================================================
+
+        client.on(
+            "message",
+            function (
+                topic,
+                payload
+            ) {
+
+                const mensagem =
+                    payload
+                        .toString()
+                        .trim()
+                        .toUpperCase();
+
+
+                console.log(
+                    "Mensagem:",
+                    topic,
+                    "=>",
+                    mensagem
+                );
+
+
+                if (
+                    topic === TOPICO_STATUS
+                ) {
+
+                    atualizarLED(
+                        mensagem
+                    );
+
+                }
+
+            }
+        );
+
+
+        // ==================================================
+        // ERRO
+        // ==================================================
+
+        client.on(
+            "error",
+            function (error) {
+
+                console.error(
+                    "ERRO MQTT:",
+                    error
+                );
+
+
+                connectionDot.className =
+                    "dot offline";
+
+
+                connectionText.textContent =
+                    "Erro MQTT";
+
+
+                message.textContent =
+                    "Erro de conexão MQTT. Veja F12 > Console.";
+
+            }
+        );
+
+
+        // ==================================================
+        // OFFLINE
+        // ==================================================
+
+        client.on(
+            "offline",
+            function () {
+
+                console.log(
+                    "MQTT offline"
+                );
+
+
+                connectionDot.className =
+                    "dot offline";
+
+
+                connectionText.textContent =
+                    "Desconectado";
+
+
+                message.textContent =
+                    "Tentando reconectar...";
+
+
+                btnOn.disabled =
+                    true;
+
+
+                btnOff.disabled =
+                    true;
+
+            }
+        );
+
+
+        // ==================================================
+        // RECONNECT
+        // ==================================================
+
+        client.on(
+            "reconnect",
+            function () {
+
+                console.log(
+                    "Reconectando..."
+                );
+
+
+                connectionDot.className =
+                    "dot connecting";
+
+
+                connectionText.textContent =
+                    "Reconectando...";
+
+            }
+        );
+
+
+        // ==================================================
+        // LIGAR LED
+        // ==================================================
+
+        function ligarLED() {
+
+
+            if (
+                !client.connected
+            ) {
+
+                message.textContent =
+                    "Não conectado ao HiveMQ.";
+
+                return;
+            }
+
+
+            console.log(
+                "→ LIGAR"
+            );
+
+
+            client.publish(
+                TOPICO_COMANDO,
+                "LIGAR",
+                {
+                    qos: 0,
+                    retain: false
+                },
+                function (error) {
+
+                    if (error) {
+
+                        console.error(
+                            "Erro:",
+                            error
+                        );
+
+                        return;
+                    }
+
+
+                    console.log(
+                        "✓ LIGAR enviado"
+                    );
+
+
+                    message.textContent =
+                        "Comando LIGAR enviado ao ESP32.";
+
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // DESLIGAR LED
+        // ==================================================
+
+        function desligarLED() {
+
+
+            if (
+                !client.connected
+            ) {
+
+                message.textContent =
+                    "Não conectado ao HiveMQ.";
+
+                return;
+            }
+
+
+            console.log(
+                "→ DESLIGAR"
+            );
+
+
+            client.publish(
+                TOPICO_COMANDO,
+                "DESLIGAR",
+                {
+                    qos: 0,
+                    retain: false
+                },
+                function (error) {
+
+                    if (error) {
+
+                        console.error(
+                            "Erro:",
+                            error
+                        );
+
+                        return;
+                    }
+
+
+                    console.log(
+                        "✓ DESLIGAR enviado"
+                    );
+
+
+                    message.textContent =
+                        "Comando DESLIGAR enviado ao ESP32.";
+
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // CONSULTAR STATUS
+        // ==================================================
+
+        function consultarStatus() {
+
+
+            if (
+                !client.connected
+            ) {
+
+                message.textContent =
+                    "Não conectado ao HiveMQ.";
+
+                return;
+            }
+
+
+            console.log(
+                "→ STATUS"
+            );
+
+
+            client.publish(
+                TOPICO_COMANDO,
+                "STATUS",
+                {
+                    qos: 0,
+                    retain: false
+                },
+                function (error) {
+
+                    if (error) {
+
+                        console.error(
+                            "Erro:",
+                            error
+                        );
+
+                        return;
+                    }
+
+
+                    message.textContent =
+                        "Consultando status do ESP32...";
+
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // ATUALIZAR LED
+        // ==================================================
+
+        function atualizarLED(
+            status
+        ) {
+
+
+            // LED LIGADO
+
+            if (
+                status === "LIGADO"
+            ) {
+
+                led.classList.add(
+                    "on"
+                );
+
+
+                ledStatus.textContent =
+                    "LIGADO";
+
+
+                message.textContent =
+                    "ESP32 confirmou: LED ligado.";
+
+            }
+
+
+            // LED DESLIGADO
+
+            else if (
+                status === "DESLIGADO"
+            ) {
+
+                led.classList.remove(
+                    "on"
+                );
+
+
+                ledStatus.textContent =
+                    "DESLIGADO";
+
+
+                message.textContent =
+                    "ESP32 confirmou: LED desligado.";
+
+            }
+
+        }
+
+
+    </script>
 
 </body>
+
 </html>
